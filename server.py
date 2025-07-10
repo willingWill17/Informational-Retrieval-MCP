@@ -5,33 +5,7 @@ import io
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 from tools.mining_data import mine_text
-from pdfminer.high_level import extract_pages
-from pdfminer.layout import LTTextContainer, LTRect
-
-# Try to import multiple PDF extraction libraries
-extraction_methods = []
-
-try:
-    import fitz  # PyMuPDF - better for slides
-    extraction_methods.append("pymupdf")
-except ImportError:
-    pass
-
-try:
-    from pdfminer.high_level import extract_text
-    extraction_methods.append("pdfminer")
-except ImportError:
-    pass
-
-try:
-    import pytesseract
-    from PIL import Image
-    import fitz  # Also needed for OCR method
-    extraction_methods.append("ocr")
-except ImportError:
-    pass
-
-print(f"Available extraction methods: {extraction_methods}")
+from tools.utils import calculate_relevance_score, extract_relevant_excerpts
 
 # Create an MCP server
 mcp = FastMCP(
@@ -39,50 +13,6 @@ mcp = FastMCP(
     host="0.0.0.0",
     port=8050,
 )
-
-def calculate_relevance_score(page_text: str, query_keywords: list[str]) -> int:
-    """Calculates a relevance score based on the number of unique keyword matches."""
-    score = 0
-    page_text_lower = page_text.lower()
-    # Using a set for query_keywords ensures we count each keyword only once
-    for keyword in set(query_keywords):
-        if keyword in page_text_lower:
-            score += 1
-    return score
-
-def extract_relevant_excerpts(text: str, keywords: list, excerpt_length: int = 200) -> list:
-    """Extract relevant excerpts from text based on keywords."""
-    excerpts = []
-    text_lower = text.lower()
-    
-    for keyword in keywords:
-        keyword_lower = keyword.lower()
-        start_pos = 0
-        
-        while True:
-            pos = text_lower.find(keyword_lower, start_pos)
-            if pos == -1:
-                break
-            
-            start_excerpt = max(0, pos - excerpt_length // 2)
-            end_excerpt = min(len(text), pos + len(keyword) + excerpt_length // 2)
-            
-            excerpt = text[start_excerpt:end_excerpt].strip()
-            
-            # Highlight the keyword
-            excerpt = re.sub(
-                re.escape(keyword), 
-                f"**{keyword}**", 
-                excerpt, 
-                flags=re.IGNORECASE
-            )
-            
-            if excerpt not in excerpts:
-                excerpts.append(excerpt)
-            
-            start_pos = pos + 1
-    
-    return excerpts
 
 @mcp.tool()
 def get_knowledge_base(query: str = ""):
