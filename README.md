@@ -29,8 +29,8 @@ This project implements a "Knowledge Base" server using the `FastMCP` framework.
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone https://github.com/willingWill17/Informational-Retrieval-MCP.git
+    cd Informational-Retrieval-MCP
     ```
 
 2.  **Create a virtual environment and activate it:**
